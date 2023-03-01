@@ -15,7 +15,6 @@ router.route("/").post(async (req, res) => {
     res.status(200).json(user);
   } catch (e) {
     res.status(400).json({ message: e.message });
-    console.log("yes");
   }
 });
 //signInControler.checkSignIn

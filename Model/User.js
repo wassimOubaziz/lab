@@ -44,6 +44,14 @@ const userSchima = new Schema({
     type: Date,
     required: [true, "user must have a date of birth"],
   },
+  labs: [
+    {
+      lab: {
+        type: String,
+        default: [],
+      },
+    },
+  ],
   createdAt: {
     type: Date,
     default: () => Date.now(),
