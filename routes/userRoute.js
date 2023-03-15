@@ -5,7 +5,6 @@ const router = express.Router();
 
 //get all users
 router.route("/").get(async (req, res) => {
-  const body = req.body;
   const users = await User.find({});
   res.status(200).json(users);
 });

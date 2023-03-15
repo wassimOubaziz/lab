@@ -3,7 +3,9 @@ const Schema = mongoose.Schema;
 
 const laboratorySchema = new Schema({
   owner: {
-    type: { type: Schema.Types.ObjectId, ref: "User", unique: true },
+    type: Schema.Types.ObjectId,
+    ref: "User",
+    required: [true, "laboratory must have owner"],
   },
   name: {
     type: String,
@@ -22,6 +24,10 @@ const laboratorySchema = new Schema({
   numRates: {
     type: Number,
     default: 0,
+  },
+  img: {
+    type: String,
+    default: `https://picsum.photos/300/200/?random`,
   },
   workers: [
     {
@@ -49,11 +55,11 @@ laboratorySchema.pre("save", function (next) {
       if (err) {
         return next(err);
       } else if (doc && !doc._id.equals(self._id)) {
-        // A document with this name and surname already exists, and it's not the same document being saved
+        // A document with this name and address already exists, and it's not the same document being saved
         const error = new Error("Name and address must be unique together");
         return next(error);
       } else {
-        // No document with this name and surname exists, or the existing document is the same as the one being saved
+        // No document with this name and address exists, or the existing document is the same as the one being saved
         return next();
       }
     }

@@ -5,10 +5,8 @@ const User = require("../Model/User");
 //sign up a user
 router.route("/").post(async (req, res) => {
   const body = req.body;
-  if (body.role == "") {
+  if (body.role == "" || body.role == ["patient"]) {
     body.role = ["patient"];
-    body.labs = [{ lab: ["idlab1", "idlab2"] }];
-    console.log(body);
   } else if (body.role == "admin") {
     body.role = ["patient", "admin"];
   } else if (body.role == "receptionist") {
@@ -19,9 +17,8 @@ router.route("/").post(async (req, res) => {
     body.role = ["patient", "auditor"];
   }
   try {
-    const user = await User.create(body);
-
-    res.status(200).json(user);
+    await User.create(body);
+    res.status(200).json({ message: "You seccesfull signed up" });
   } catch (e) {
     res.status(400).json({ message: e.message });
   }

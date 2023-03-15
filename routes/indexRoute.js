@@ -1,7 +1,14 @@
 const express = require("express");
-const route = express.Router();
-const indexControler = require("../controllers/indexControler");
+const router = express.Router();
+const {
+  getIndexPage,
+  sendMessageToSuperAdmin,
+} = require("../controllers/indexControler");
+const Message = require("../Model/Message");
 
-route.get("^/$|index(.html)?", indexControler);
+router
+  .route("^/$|index(.html)?")
+  .get(getIndexPage)
+  .post(sendMessageToSuperAdmin);
 
-module.exports = route;
+module.exports = router;

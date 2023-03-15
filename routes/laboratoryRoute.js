@@ -4,9 +4,16 @@ const Laboratory = require("../Model/Laboratory");
 
 /////////////// Laboratory Controller //////////////////
 
-//get labs
+//get labs with search
 router.route("/").get(async (req, res) => {
-  const labs = await Laboratory.find({});
+  const query = req.query.query; // Access the "query" property of the "req.query" object
+  const body = JSON.parse(query); // Parse the JSON string into an object
+  const filter = {};
+  if (body.name) {
+    // Check if the "name" property exists in the "body" object
+    filter.name = { $regex: `^${body.name}`, $options: "i" }; // Add the "name" property to the filter object
+  }
+  const labs = await Laboratory.find(filter);
   res.status(200).json(labs);
 });
 
