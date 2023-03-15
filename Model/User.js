@@ -30,7 +30,8 @@ const userSchima = new Schema({
   password: {
     type: String,
     required: [true, "user must have a password"],
-    minlength: 8,
+    minlength: [8, "password must be at least 8 length"],
+    select: false,
   },
   role: [
     {
@@ -84,6 +85,10 @@ userSchima.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
+
+userSchima.methods.checkPassword = async (userPass, hashPass) => {
+  return bcrypt.compare(userPass, hashPass);
+};
 
 const User = mongoose.model("User", userSchima);
 
