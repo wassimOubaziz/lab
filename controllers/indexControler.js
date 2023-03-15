@@ -3,7 +3,7 @@ const Message = require("../Model/Message");
 
 //get index page
 exports.getIndexPage = async (req, res) => {
-  let labs = await Laboratory.find({}).sort({ rating: -1 }).limit(4);
+  let labs = await Laboratory.find({}).sort({ avgRating: -1 }).limit(4);
   res.status(200).json({
     length: labs.length,
     departement: 3,
