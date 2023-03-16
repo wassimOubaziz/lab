@@ -8,8 +8,6 @@ const Laboratory = require("../Model/Laboratory");
 //get labs with search
 router.route("/").get(protect, async (req, res) => {
   try {
-    console.log("this is working");
-
     res.status(200).json({ message: "this is working" });
   } catch (e) {}
 });

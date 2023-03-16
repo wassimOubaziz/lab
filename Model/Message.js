@@ -22,6 +22,10 @@ const messageSchema = new Schema({
     type: String,
     required: [true, "Contact must have a message"],
   },
+  timeSpan: {
+    type: Date,
+    default: () => Date.now(),
+  },
 });
 
 module.exports = mongoose.model("Message", messageSchema);

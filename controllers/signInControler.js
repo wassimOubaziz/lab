@@ -19,8 +19,14 @@ exports.protect = async (req, res, next) => {
       .json({ status: "faild", message: "token doen't exit plz login again" });
 
   //verification of the token
-  const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
-  console.log(decoded);
+  let decoded;
+  try {
+    decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+  } catch (e) {
+    return res
+      .status(401)
+      .json({ status: "faild", message: "token doen't exit plz login again" });
+  }
   //checkin if the user is still exist (not deleted)
   const user = await User.findById(decoded.id);
   if (!user) {

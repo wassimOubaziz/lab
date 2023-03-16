@@ -17,8 +17,10 @@ const userSchima = new Schema({
   phone: {
     type: String,
     required: [true, "user must have a phone number"],
-    minlength: [9, "number must be at least 9"],
-    maxlength: [10, "number must be at most 10"],
+    validate: [
+      (v) => validator.isMobilePhone(v, ["ar-DZ"]),
+      "plz provide a valide phone number",
+    ],
   },
   email: {
     type: String,
@@ -55,11 +57,13 @@ const userSchima = new Schema({
       function (el) {
         const Birthyear = new Date(el).getFullYear();
         const currentYear = new Date().getFullYear();
-        if (currentYear - Birthyear >= 8) return true;
+        if (currentYear - Birthyear >= 8 && currentYear - Birthyear <= 120)
+          return true;
         return false;
       },
       "you must be at least 8 years old",
     ],
+    validate: [validator.isDate, "plz provide a valide date"],
   },
   labs: [
     {

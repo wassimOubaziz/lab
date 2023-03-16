@@ -6,15 +6,23 @@ const Laboratory = require("../Model/Laboratory");
 
 //get labs with search
 router.route("/").get(async (req, res) => {
-  const query = req.query.query; // Access the "query" property of the "req.query" object
-  const body = JSON.parse(query); // Parse the JSON string into an object
-  const filter = {};
-  if (body.name) {
-    // Check if the "name" property exists in the "body" object
-    filter.name = { $regex: `^${body.name}`, $options: "i" }; // Add the "name" property to the filter object
+  try {
+    //console.log(req.query, "testing");
+    let query = req.query.query; // Access the "query" property of the "req.query" object
+    if (!query) {
+      query = "{}";
+    }
+    const body = JSON.parse(query); // Parse the JSON string into an object
+    const filter = {};
+    if (body.name) {
+      // Check if the "name" property exists in the "body" object
+      filter.name = { $regex: `^${body.name}`, $options: "i" }; // Add the "name" property to the filter object
+    }
+    const labs = await Laboratory.find(filter);
+    res.status(200).json(labs);
+  } catch (e) {
+    res.status(400).json({ message: e.message });
   }
-  const labs = await Laboratory.find(filter);
-  res.status(200).json(labs);
 });
 
 // get lab by id
