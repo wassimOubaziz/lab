@@ -27,17 +27,17 @@ exports.protect = async (req, res, next) => {
       .status(401)
       .json({ status: "faild", message: "token doen't exit plz login again" });
   }
-  //checkin if the user is still exist (not deleted)
-  const user = await User.findById(decoded.id);
-  if (!user) {
+  //checkin if the currentUser is still exist (not deleted)
+  const currentUser = await User.findById(decoded.id);
+  if (!currentUser) {
     return res.status(401).json({
       status: "faild",
-      message: "the user with this token has been deleted",
+      message: "the currentUser with this token has been deleted",
     });
   }
 
   //checking if the password has been updated
-  if (user.changedPasswordAfter(decoded.iat)) {
+  if (currentUser.changedPasswordAfter(decoded.iat)) {
     return res.status(401).json({
       status: "faild",
       message: "token has expired because password update plz login again",
@@ -45,5 +45,25 @@ exports.protect = async (req, res, next) => {
   }
 
   //if all test are passed so will continue the process
+  //sign the current currentUser to the request
+
+  req.user = currentUser;
+
+  //send it to text meddileware
   next();
+};
+
+exports.permition = (...roles) => {
+  return (req, res, next) => {
+    const hasRole = req.user.role.some((role) => roles.includes(role));
+    if (!hasRole) {
+      res
+        .status(403)
+        .json({
+          status: "no permition",
+          message: "You do not have permitin to profom this action",
+        });
+    }
+    next();
+  };
 };
