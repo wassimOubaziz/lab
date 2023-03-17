@@ -9,6 +9,8 @@ const laboratoryRoute = require("./routes/laboratoryRoute");
 const reviewRoute = require("./routes/reviewRoute");
 const userRoute = require("./routes/userRoute");
 const adminLabRoute = require("./routes/adminLabRoute");
+const validateRoute = require("./routes/validateRoute");
+const { protect, permition } = require("./controllers/signInControler");
 
 app.use(
   cors({
@@ -27,7 +29,7 @@ app.use("/signup", signupRoute);
 app.use("/login", signInRoute);
 
 //for admin lab page
-app.use("/admin-lab", adminLabRoute);
+app.use("/admin-lab", protect, permition("superadmin", "admin"), adminLabRoute);
 
 //for labo
 app.use("/labs", laboratoryRoute);
@@ -37,6 +39,9 @@ app.use("/reviews", reviewRoute);
 
 //for users
 app.use("/users", userRoute);
+
+//for validation page
+app.use("/validate", validateRoute);
 
 //exporting app
 module.exports = app;

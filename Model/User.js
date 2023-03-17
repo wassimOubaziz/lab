@@ -65,14 +65,6 @@ const userSchima = new Schema({
     ],
     validate: [validator.isDate, "plz provide a valide date"],
   },
-  labs: [
-    {
-      lab: {
-        type: String,
-        default: [],
-      },
-    },
-  ],
   acitve: {
     type: Boolean,
     default: false,
@@ -82,6 +74,13 @@ const userSchima = new Schema({
     default: () => Date.now(),
   },
   changedPassword: Date,
+  validationToken: {
+    type: String,
+  },
+  isValide: {
+    type: Boolean,
+    default: false,
+  },
 });
 
 //this will work when i update the password and when i create new user

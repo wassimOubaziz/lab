@@ -29,18 +29,16 @@ const laboratorySchema = new Schema({
     type: String,
     default: `https://picsum.photos/300/200/?random`,
   },
+  patients: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+  ],
   workers: [
     {
-      type: {
-        is: {
-          type: String,
-          enum: ["receptionist", "nurse", "auditor"],
-        },
-        user: {
-          type: Schema.Types.ObjectId,
-          ref: "User",
-        },
-      },
+      type: Schema.Types.ObjectId,
+      ref: "User",
     },
   ],
 });

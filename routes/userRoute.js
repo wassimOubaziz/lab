@@ -28,19 +28,19 @@ router.route("/:id").get(async (req, res) => {
 });
 
 //add user ["receptionist", "nurse", "auditor"] for the admin
-router.route("/adduser").post(async (req, res) => {
+router.route("/addworker").post(async (req, res) => {
   const body = req.body;
   try {
     const lab = await Laboratory.findById(body.labid);
     const isDuplicate = lab.workers.some(
-      (worker) => String(worker.user) === body.userid
+      (worker) => String(worker) === body.userid
     );
     if (isDuplicate) {
       return res
         .status(400)
         .json({ message: "User is already added to this laboratory" });
     }
-    lab.workers.push({ is: body.role, user: body.userid });
+    lab.workers.push(body.userid);
     await lab.save();
     res.status(202).json({ lab });
   } catch (e) {

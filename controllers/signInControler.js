@@ -53,16 +53,15 @@ exports.protect = async (req, res, next) => {
   next();
 };
 
+//authorization
 exports.permition = (...roles) => {
   return (req, res, next) => {
     const hasRole = req.user.role.some((role) => roles.includes(role));
     if (!hasRole) {
-      res
-        .status(403)
-        .json({
-          status: "no permition",
-          message: "You do not have permitin to profom this action",
-        });
+      res.status(403).json({
+        status: "no permition",
+        message: "You do not have permitin to profom this action",
+      });
     }
     next();
   };
