@@ -1,8 +1,6 @@
 require("dotenv").config();
-const express = require("express");
 const mongoose = require("mongoose");
 
-const path = require("path");
 const app = require("./app");
 const URL = process.env.URL;
 

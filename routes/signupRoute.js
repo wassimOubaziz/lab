@@ -30,8 +30,9 @@ router.route("/").post(async (req, res) => {
 
   try {
     const user = await User.findOne({ email: body.email });
+    let token;
     if (!user) {
-      const token = jwt.sign({ email: body.email }, process.env.JWT_SECRET, {
+      token = jwt.sign({ email: body.email }, process.env.JWT_SECRET, {
         expiresIn: process.env.JWT_EXPIRE_TIME_FOR_VALIDATION,
       });
 

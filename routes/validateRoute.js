@@ -18,7 +18,6 @@ router.route("/:token").get(async (req, res) => {
     // Update the user's account to mark it as validated
     user.isValide = true;
     user.validationToken = undefined;
-    console.log(user);
     await user.save();
     res
       .status(200)

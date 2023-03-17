@@ -1,5 +1,5 @@
 const express = require("express");
-const path = require("path");
+const job = require("./expired-users-cron");
 const app = express();
 const cors = require("cors");
 const indexRoute = require("./routes/indexRoute");
@@ -42,6 +42,9 @@ app.use("/users", userRoute);
 
 //for validation page
 app.use("/validate", validateRoute);
+
+//starting deleting users that are not valided there account
+job.start();
 
 //exporting app
 module.exports = app;
