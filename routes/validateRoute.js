@@ -3,7 +3,6 @@ const User = require("../Model/User");
 const router = express.Router();
 
 router.route("/:token").get(async (req, res) => {
-  console.log("validating token");
   const token = req.params.token;
   try {
     const user = await User.findOne({ validationToken: token });
