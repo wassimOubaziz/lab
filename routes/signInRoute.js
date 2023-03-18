@@ -35,6 +35,7 @@ router.route("/").post(async (req, res) => {
         });
       }
     }
+
     //check if the email is valid or not
     if (!user.isValide) {
       return res.status(400).json({ message: "This acount is not valide" });
@@ -62,7 +63,7 @@ router.route("/").post(async (req, res) => {
     // i dont wont to chow all of this
     user.password = undefined;
     user.isValide = undefined;
-
+    counter = 0;
     // sending to data the response if everything is correct
     res.status(200).json({
       status: "success",
