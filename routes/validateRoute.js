@@ -11,8 +11,10 @@ router.route("/:token").get(async (req, res) => {
     if (!user) {
       // If the token is invalid, send a 404 error
       return res
-        .status(404)
-        .json({ status: "faild", message: "Invalid validation token" });
+        .status(400)
+        .redirect(
+          "http://localhost:3000/sign-up/The%20Link%20is%20not%20available%20any%20more,%20Plz%20Regester%20again!"
+        );
     }
 
     // Update the user's account to mark it as validated

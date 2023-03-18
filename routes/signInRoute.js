@@ -4,6 +4,8 @@ const User = require("../Model/User");
 const jwt = require("jsonwebtoken");
 const signInControler = require("../controllers/signInControler");
 
+let counter = 0;
+
 ////signInControler.checkSignIn
 router.route("/").post(async (req, res) => {
   try {
@@ -20,9 +22,19 @@ router.route("/").post(async (req, res) => {
     let user = await User.findOne({
       email: email,
     }).select(
-      "+password -name -surname -email -acitve -createdAt -dateOfBirth -phone"
+      "+password -name -surname -email -acitve -createdAt -dateOfBirth -phone  -changedPassword -joinedLab"
     );
 
+    if (user) {
+      counter++;
+      if (counter === 4) {
+        counter = 0;
+        return res.status(400).json({
+          status: "blocked",
+          message: "You are blocked for 10 minutes",
+        });
+      }
+    }
     //check if the email is valid or not
     if (!user.isValide) {
       return res.status(400).json({ message: "This acount is not valide" });
@@ -49,12 +61,7 @@ router.route("/").post(async (req, res) => {
 
     // i dont wont to chow all of this
     user.password = undefined;
-    // user.name = undefined;
-    // user.surname = undefined;
-    // user.email = undefined;
-    // user.active = undefined;
-    // user.createdAt = undefined;
-    // user.date
+    user.isValide = undefined;
 
     // sending to data the response if everything is correct
     res.status(200).json({

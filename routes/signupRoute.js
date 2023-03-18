@@ -32,9 +32,7 @@ router.route("/").post(async (req, res) => {
     const user = await User.findOne({ email: body.email });
     let token;
     if (!user) {
-      token = jwt.sign({ email: body.email }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRE_TIME_FOR_VALIDATION,
-      });
+      token = jwt.sign({ email: body.email }, process.env.JWT_SECRET);
 
       body.validationToken = token;
       const validationLink = `http://localhost:4000/validate/${token}`;
@@ -43,7 +41,12 @@ router.route("/").post(async (req, res) => {
         to: body.email, // replace with the new user's email address
         subject: "Please validate your account",
         text: `Click this link to validate your account: ${validationLink}`,
-        html: `Click <a href="${validationLink}">this link</a> to validate your account.`,
+        html: `<div style="background-color: #f2f2f2; padding: 20px;">
+        <h2>Thanks for registering!</h2>
+        <p>Please click the button below to validate your account:</p>
+        <a href="${validationLink}" style="background-color: #4CAF50; border: none; color: white; padding: 12px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin-top: 20px;">Validate Account</a>
+    </div>
+    `,
       });
     }
     await User.create(body);
