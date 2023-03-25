@@ -2,8 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Laboratory = require("../Model/Laboratory");
 
-/////////////// Laboratory Controller //////////////////
-
 //get labs with search
 router.route("/").get(async (req, res) => {
   try {
@@ -31,19 +29,6 @@ router.route("/:id").get(async (req, res) => {
   const id = req.params.id;
   const lab = await Laboratory.findById(id).populate("owner");
   res.status(200).json(lab);
-});
-
-//add laboratory
-router.route("/addlab").post(async (req, res) => {
-  try {
-    const body = req.body;
-    const laboratory = await Laboratory.create(body);
-    res.json(laboratory);
-  } catch (e) {
-    res.status(400).json({
-      message: e.message,
-    });
-  }
 });
 
 //delete laboratory

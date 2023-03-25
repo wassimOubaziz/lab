@@ -1,5 +1,8 @@
 const cron = require("cron");
 const User = require("./Model/User");
+
+//the job will run every 10 minutes (can take 20 minutes max),
+//to make it 1 minutes (2 minutes max) change the stars and everything to *****
 const job = new cron.CronJob("0 */10 * * * *", async () => {
   // Find expired users
   const expiredUsers = await User.find({

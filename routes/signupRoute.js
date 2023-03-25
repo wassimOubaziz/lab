@@ -33,29 +33,33 @@ router.route("/").post(async (req, res) => {
     let token;
     if (!user) {
       token = jwt.sign({ email: body.email }, process.env.JWT_SECRET);
-
       body.validationToken = token;
+      await User.create(body);
+      ///this will change in deployment
       const validationLink = `http://localhost:4000/validate/${token}`;
-      await transporter.sendMail({
-        from: process.env.EMAIL_SECRET, // replace with your actual email address
-        to: body.email, // replace with the new user's email address
-        subject: "Please validate your account",
-        text: `Click this link to validate your account: ${validationLink}`,
-        html: `<div style="background-color: #f2f2f2; padding: 20px;">
-        <h2>Thanks for registering!</h2>
-        <p>Please click the button below to validate your account:</p>
-        <a href="${validationLink}" style="background-color: #4CAF50; border: none; color: white; padding: 12px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin-top: 20px;">Validate Account</a>
-    </div>
-    `,
-      });
+      try {
+        await transporter.sendMail({
+          from: process.env.EMAIL_SECRET, // replace with your actual email address
+          to: body.email, // replace with the new user's email address
+          subject: "Please validate your account",
+          text: `Click this link to validate your account: ${validationLink}`,
+          html: `<div style="background-color: #f2f2f2; padding: 20px;">
+          <h2>Thanks for registering!</h2>
+          <p>Please click the button below to validate your account:</p>
+          <a href="${validationLink}" style="background-color: #4CAF50; border: none; color: white; padding: 12px 32px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin-top: 20px;">Validate Account</a>
+      </div>
+      `,
+        });
+      } catch (e) {
+        if (e) await User.deleteOne({ email: body.email });
+        return res.status(400).json({ message: e.message });
+      }
     }
-    await User.create(body);
 
     res.status(200).json({
       message: "Validation Email succesfully sended plz check your email",
     });
   } catch (e) {
-    console.log(e);
     res.status(400).json({ message: e.message });
   }
 });

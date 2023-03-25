@@ -5,6 +5,7 @@ const cors = require("cors");
 const indexRoute = require("./routes/indexRoute");
 const signupRoute = require("./routes/signupRoute");
 const signInRoute = require("./routes/signInRoute");
+const signOutRoute = require("./routes/signOutRoute");
 const laboratoryRoute = require("./routes/laboratoryRoute");
 const reviewRoute = require("./routes/reviewRoute");
 const userRoute = require("./routes/userRoute");
@@ -12,12 +13,16 @@ const adminLabRoute = require("./routes/adminLabRoute");
 const validateRoute = require("./routes/validateRoute");
 const { protect, permition } = require("./controllers/signInControler");
 
+//to allow the host to acces multi cors
 app.use(
   cors({
     origin: ["http://localhost:3000", "www.localhost:3000", "localhost:3000"],
+    credentials: true,
+    exposedHeaders: ["Set-Cookie"],
   })
 );
 
+app.use(express.static("public"));
 app.use(express.json());
 //for index page
 app.use("/", indexRoute);
@@ -27,6 +32,9 @@ app.use("/signup", signupRoute);
 
 //for login page
 app.use("/login", signInRoute);
+
+//for sign out page
+app.use("/logout", signOutRoute);
 
 //for admin lab page
 app.use("/admin-lab", protect, permition("superadmin", "admin"), adminLabRoute);

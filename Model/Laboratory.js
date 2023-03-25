@@ -27,7 +27,7 @@ const laboratorySchema = new Schema({
   },
   img: {
     type: String,
-    default: `https://picsum.photos/300/200/?random`,
+    default: `/images/no-image.png`,
   },
   patients: [
     {

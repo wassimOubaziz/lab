@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const User = require("../Model/User");
 const jwt = require("jsonwebtoken");
-const signInControler = require("../controllers/signInControler");
 
 let counter = 0;
 
@@ -53,17 +52,19 @@ router.route("/").post(async (req, res) => {
       expiresIn: process.env.JWT_EXPIRE_TIME,
     });
 
-    //sending cookies to client side
-    // res.cookie("jwt", token, {
-    //   expires: new Date(Date.now() + process.env.COOKIE_EXPIRE_TIME * 60),
-    //   //secure: true  //only when you have https (now we have http)
-    //   httpOnly: true,
-    // });
-
     // i dont wont to chow all of this
     user.password = undefined;
     user.isValide = undefined;
     counter = 0;
+
+    //sending cookie to client side
+    res.cookie("jwt", token, {
+      expires: new Date(
+        Date.now() + process.env.COOKIE_EXPIRE_TIME * 24 * 60 * 60 * 1000
+      ),
+      httpOnly: false,
+      // secure: req.secure || req.headers["x-forwarded-proto"] === "https",
+    });
     // sending to data the response if everything is correct
     res.status(200).json({
       status: "success",

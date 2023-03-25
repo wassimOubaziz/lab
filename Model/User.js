@@ -55,16 +55,19 @@ const userSchima = new Schema({
     type: Date,
     required: [true, "user must have a date of birth"],
     validate: [
-      function (el) {
-        const Birthyear = new Date(el).getFullYear();
-        const currentYear = new Date().getFullYear();
-        if (currentYear - Birthyear >= 8 && currentYear - Birthyear <= 120)
-          return true;
-        return false;
+      {
+        validator: function (value) {
+          const birthYear = new Date(value).getFullYear();
+          const currentYear = new Date().getFullYear();
+          return currentYear - birthYear >= 0 && currentYear - birthYear <= 120;
+        },
+        message: "Please provide a valid date of birth",
       },
-      "you must be at least 8 years old",
+      {
+        validator: validator.isDate,
+        message: "Please provide a valid date",
+      },
     ],
-    validate: [validator.isDate, "plz provide a valide date"],
   },
   acitve: {
     type: Boolean,
@@ -84,7 +87,7 @@ const userSchima = new Schema({
   },
 });
 
-//this will work when i update the password and when i create new user
+//this will work when i update the password or when i create new user
 userSchima.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
   this.password = await bcrypt.hash(this.password, 12);
@@ -96,6 +99,7 @@ userSchima.methods.checkPassword = async (userPass, hashPass) => {
   return bcrypt.compare(userPass, hashPass);
 };
 
+//this will return true if the time jwt < time changed password
 userSchima.methods.changedPasswordAfter = function (JWTTimestamp) {
   if (this.changedPassword) {
     return JWTTimestamp < parseInt(this.changedPassword.getTime() / 1000, 10);
