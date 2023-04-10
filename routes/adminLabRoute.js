@@ -5,6 +5,8 @@ const path = require("path");
 const router = express.Router();
 const Laboratory = require("../Model/Laboratory");
 const Announcement = require("../Model/Announcement");
+const Complaint = require("../Model/Complaint");
+const MessageToAdmin = require("../Model/MessageToAdmin");
 
 /////////////// Admin Laboratory Routes //////////////////
 
@@ -40,7 +42,46 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 router.route("/addlab").post(upload.single("labsImages"), async (req, res) => {
-  const { name, address } = req.body;
+  const { name, address, id } = req.body;
+  if (id) {
+    let imgPath;
+    let lab;
+    try {
+      lab = await Laboratory.findById(id);
+      const newLab = Laboratory({
+        owner: lab.owner,
+        patients: lab.patients,
+        workers: lab.workers,
+        avgRating: lab.avgRating,
+        numRates: lab.numRates,
+        address: lab.address,
+        name: lab.name,
+        img: lab.img,
+      });
+      await lab.deleteOne();
+      newLab.name = name;
+      newLab.address = address;
+      if (req.file && req.file.path) {
+        imgPath = req.file.path.replace(/\\/g, "/").substring("public".length);
+        newLab.img = imgPath;
+      }
+
+      await newLab.save();
+
+      const labs = await Laboratory.find({ owner: req.user._id }).populate([
+        "patients",
+        "workers",
+      ]);
+      return res.status(201).json({
+        status: "success",
+        message: "Lab updated successfully",
+        labs: labs,
+      });
+    } catch (e) {
+      return res.status(400).json({ status: "faild", message: e.message });
+    }
+  }
+
   const imgPath = req?.file?.path
     .replace(/\\/g, "/")
     .substring("public".length);
@@ -64,6 +105,25 @@ router.route("/addlab").post(upload.single("labsImages"), async (req, res) => {
       status: "faild",
       message: err.message,
     });
+  }
+});
+
+//delete lab
+router.route("/:id").delete(async (req, res) => {
+  const id = req.params.id;
+  try {
+    await Laboratory.findByIdAndDelete(id);
+    const labs = await Laboratory.find({ owner: req.user._id }).populate([
+      "patients",
+      "workers",
+    ]);
+    return res.status(201).json({
+      status: "success",
+      message: "Lab deleted successfully",
+      labs: labs,
+    });
+  } catch (e) {
+    return res.status(400).json({ status: "faild", message: e.message });
   }
 });
 
@@ -103,7 +163,7 @@ router.route("/addAnnouncement").post(async (req, res) => {
       address,
       owner: req.user._id,
     });
-    announce.save();
+    await announce.save();
     const announcements = await Announcement.find({ owner: req.user._id });
     return res.status(201).json({
       status: "success",
@@ -126,6 +186,79 @@ router.route("/deleteAnnouncement/:id").delete(async (req, res) => {
       message: "Announcement deleted successfully",
       announcements,
     });
+  } catch (e) {
+    return res.status(400).json({ status: "faild", message: e.message });
+  }
+});
+
+//consult complaints for the admin
+router.route("/complaints").get(async (req, res) => {
+  const body = req.body.sortby || 1;
+  try {
+    //show all the complaints
+    const complaints = await Complaint.find({
+      owner: req.user._id,
+    })
+      .populate(["complainer", "reported"])
+      .sort({ date: body });
+    res.status(200).json({ complaints });
+  } catch (e) {
+    res.status(400).json({ message: e.message });
+  }
+});
+
+//delete complaint
+router.route("/complaints/:id").delete(async (req, res) => {
+  const id = req.params.id;
+
+  try {
+    await Complaint.findByIdAndUpdate(id, { deletedByAdmin: true });
+    const complaints = await Complaint.find({ owner: req.user._id })
+      .populate(["complainer", "reported"])
+      .sort({ date: 1 });
+    return res.status(201).json({
+      status: "success",
+      message: "Complaint deleted successfully",
+      complaints,
+    });
+  } catch (e) {
+    return res.status(400).json({ status: "faild", message: e.message });
+  }
+});
+
+//get all the messages that send to admin
+router.route("/messages").get(async (req, res) => {
+  //return all messages that send to admin by users that work for him
+  try {
+    const messages = await MessageToAdmin.find({
+      sendTo: req.user._id,
+    }).populate("owner");
+    return res.status(200).json({ messages });
+  } catch (e) {
+    return res.status(400).json({ status: "faild", message: e.message });
+  }
+});
+
+//sending text (response) to the user
+router.route("/messages").post(async (req, res) => {
+  const { text, messageId } = req.body;
+  if (!text || !messageId)
+    return res
+      .status(400)
+      .json({ status: "faild", message: "Please fill all fields" });
+
+  try {
+    //update the message
+    await MessageToAdmin.findByIdAndUpdate(messageId, {
+      replied: text,
+    });
+    const messages = await MessageToAdmin.find({
+      sendTo: req.user._id,
+    }).populate("owner");
+
+    return res
+      .status(200)
+      .json({ messages, message: "Message sent successfully" });
   } catch (e) {
     return res.status(400).json({ status: "faild", message: e.message });
   }
