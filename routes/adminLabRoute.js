@@ -7,6 +7,8 @@ const Laboratory = require("../Model/Laboratory");
 const Announcement = require("../Model/Announcement");
 const Complaint = require("../Model/Complaint");
 const MessageToAdmin = require("../Model/MessageToAdmin");
+const BloodBank = require("../Model/BloodBank");
+const Donation = require("../Model/Donation");
 
 /////////////// Admin Laboratory Routes //////////////////
 
@@ -18,7 +20,23 @@ router.route("/").get(async (req, res) => {
       "workers",
     ]);
     const announcements = await Announcement.find({ owner: req.user._id });
-    res.status(200).json({ user: req.user, labs: labs, announcements });
+    const bloodBanks = await BloodBank.find({ lab_owner: req.user._id });
+    //calculate all the blookBank amount for all labs for each bloodType
+    const bloodBankAmount = bloodBanks.map((bloodBank) => bloodBank.amount);
+    // add the first element with the first ...
+    const result = [0, 0, 0, 0, 0, 0, 0, 0];
+    bloodBankAmount.forEach((amount, i) => {
+      amount.forEach((a, j) => {
+        result[j] += a;
+      });
+    });
+
+    res.status(200).json({
+      user: req.user,
+      labs: labs,
+      announcements,
+      bloodBank: result,
+    });
   } catch (e) {
     res.status(400).json({ message: e.message });
   }
@@ -90,7 +108,15 @@ router.route("/addlab").post(upload.single("labsImages"), async (req, res) => {
   //Create a new Lab instance and save to database
   const lab = new Laboratory({ name, address, owner, img: imgPath });
   try {
-    await lab.save();
+    const labo = await lab.save();
+    //create bloodBank for this lab
+    const bloodBank = new BloodBank({
+      id_lab: labo._id,
+      bloodType: ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"],
+      amount: [0, 0, 0, 0, 0, 0, 0, 0],
+      lab_owner: req.user._id,
+    });
+    await bloodBank.save();
     const labs = await Laboratory.find({ owner: req.user._id }).populate([
       "patients",
       "workers",
@@ -263,5 +289,71 @@ router.route("/messages").post(async (req, res) => {
     return res.status(400).json({ status: "faild", message: e.message });
   }
 });
+
+//add blood donation
+router.route("/addBloodDonation").post(async (req, res) => {
+  const { id_donator, id_lab, bloodType, amount } = req.body;
+  if (!id_donator || !id_lab || !bloodType || !amount)
+    return res
+      .status(400)
+      .json({ status: "faild", message: "Please fill all fields" });
+
+  try {
+    await Donation.create({ id_user: id_donator, id_lab, bloodType, amount });
+    const bloodBanks = await BloodBank.find({ owner: req.user._id })
+      .select("bloodType amount id_lab")
+      .populate("id_lab");
+    return res.status(201).json({
+      status: "success",
+      message: "Donation added successfully",
+      bloodBanks,
+    });
+  } catch (e) {
+    return res.status(400).json({ status: "faild", message: e.message });
+  }
+});
+
+//get lab by id
+router.route("/:id").get(async (req, res) => {
+  const id = req.params.id;
+  try {
+    const lab = await Laboratory.findById(id).populate(["workers", "patients"]);
+    return res.status(200).json({ lab });
+  } catch (e) {
+    return res.status(400).json({ status: "faild", message: e.message });
+  }
+});
+
+//change for the worker to another lab
+router.route("/transfer").post(async (req, res) => {
+  const { workerId, labId, newLabId } = req.body;
+  console.log(workerId, labId, newLabId);
+  if (!workerId || !labId || !newLabId)
+    return res
+      .status(400)
+      .json({ status: "faild", message: "Please fill all fields" });
+
+  try {
+    //remove the worker from the old lab
+    ////////////////// when i comeback i will work here ///////////////////////
+    /// i will remove the worker from the old lab and add him to the new lab
+    const oldLab = await Laboratory.findById(labId);
+    const index = oldLab.workers.indexOf(workerId);
+    oldLab.workers.splice(index, 1);
+    await oldLab.save();
+    //add the worker to the new lab
+    const newLab = await Laboratory.findById(newLabId);
+    newLab.workers.push(workerId);
+    await newLab.save();
+    return res
+      .status(200)
+      .json({ lab: oldLab, message: "The worker has been Transfered." });
+  } catch (e) {
+    return res.status(400).json({ status: "faild", message: e.message });
+  }
+});
+
+//create new lab in the client side
+//change the lab id in the route of addbloodbank
 
 module.exports = router;
