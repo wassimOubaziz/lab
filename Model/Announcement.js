@@ -17,15 +17,26 @@ const announcementSchema = new Schema({
     type: String,
     required: [true, "announcement must have a content"],
     unique: false,
+    minLength: [100, "announcement content must be at least 100 characters"],
+    maxLength: [500, "announcement content must be at most 500 characters"],
   },
   job: {
     type: String,
     required: [true, "announcement must have a required job"],
+    enum: ["nurse", "receptionist", "auditor"],
     unique: false,
   },
-  address: {
-    type: String,
+  lab: {
+    type: Schema.Types.ObjectId,
+    ref: "Laboratory",
+    required: [true, "announcement must have a laboratory"],
   },
+  jobRequests: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "JobRequest",
+    },
+  ],
   date: {
     type: Date,
     default: Date.now,

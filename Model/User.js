@@ -69,6 +69,10 @@ const userSchima = new Schema({
       },
     ],
   },
+  hasJob: {
+    type: Boolean,
+    default: false,
+  },
   acitve: {
     type: Boolean,
     default: false,

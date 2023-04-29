@@ -31,14 +31,14 @@ router.route("/").get(async (req, res) => {
       });
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       user: req.user,
       labs: labs,
       announcements,
       bloodBank: result,
     });
   } catch (e) {
-    res.status(400).json({ message: e.message });
+    return res.status(400).json({ message: e.message });
   }
 });
 
@@ -157,7 +157,9 @@ router.route("/:id").delete(async (req, res) => {
 router.route("/addAnnouncement").post(async (req, res) => {
   const { title, content, job, address, id } = req.body;
 
-  if (!title || !content || !job || !address)
+  const lab = address;
+
+  if (!title || !content || !job || !lab)
     return res
       .status(400)
       .json({ status: "faild", message: "Please fill all fields" });
@@ -168,7 +170,7 @@ router.route("/addAnnouncement").post(async (req, res) => {
         title,
         content,
         job,
-        address,
+        lab,
       });
       const announcements = await Announcement.find({ owner: req.user._id });
       return res.status(201).json({
@@ -186,7 +188,7 @@ router.route("/addAnnouncement").post(async (req, res) => {
       title,
       content,
       job,
-      address,
+      lab,
       owner: req.user._id,
     });
     await announce.save();
@@ -318,7 +320,8 @@ router.route("/:id").get(async (req, res) => {
   const id = req.params.id;
   try {
     const lab = await Laboratory.findById(id).populate(["workers", "patients"]);
-    return res.status(200).json({ lab });
+    const bloodBank = await BloodBank.findOne({ id_lab: id });
+    return res.status(200).json({ lab, bloodBank });
   } catch (e) {
     return res.status(400).json({ status: "faild", message: e.message });
   }
@@ -327,7 +330,6 @@ router.route("/:id").get(async (req, res) => {
 //change for the worker to another lab
 router.route("/transfer").post(async (req, res) => {
   const { workerId, labId, newLabId } = req.body;
-  console.log(workerId, labId, newLabId);
   if (!workerId || !labId || !newLabId)
     return res
       .status(400)
@@ -348,6 +350,23 @@ router.route("/transfer").post(async (req, res) => {
     return res
       .status(200)
       .json({ lab: oldLab, message: "The worker has been Transfered." });
+  } catch (e) {
+    return res.status(400).json({ status: "faild", message: e.message });
+  }
+});
+
+//delete the worker lab from the lab
+router.route("/:id/:worker").delete(async (req, res) => {
+  const id = req.params.id;
+  const workerId = req.params.worker;
+  try {
+    const lab = await Laboratory.findById(id);
+    const index = lab.workers.indexOf(workerId);
+    lab.workers.splice(index, 1);
+    await lab.save();
+    return res
+      .status(200)
+      .json({ lab, message: "The worker has been deleted." });
   } catch (e) {
     return res.status(400).json({ status: "faild", message: e.message });
   }

@@ -2,6 +2,7 @@
 const jwt = require("jsonwebtoken");
 const User = require("../Model/User");
 const { promisify } = require("util");
+const Announcement = require("../Model/Announcement");
 
 exports.protect = async (req, res, next) => {
   //getting token and check it
@@ -58,11 +59,37 @@ exports.permition = (...roles) => {
   return (req, res, next) => {
     const hasRole = req.user.role.some((role) => roles.includes(role));
     if (!hasRole) {
-      res.status(403).json({
+      return res.status(403).json({
         status: "no permition",
-        message: "You do not have permitin to profom this action",
+        message: "You do not have permition to profom this action",
       });
     }
     next();
   };
+};
+
+//check if the nurse have a job function
+exports.checkIfNurseHaveJob = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (user.hasJob) {
+      return next();
+    }
+    //show all the Announcements that offerd by the lab
+    // const announcements = await Announcement.find({})
+    //   .populate({ path: "owner", select: "name surname -_id" })
+    //   .populate({ path: "lab", select: "address name -_id" });
+    res.status(200).json({
+      status: "success",
+      data: {
+        announcements: [],
+        user,
+      },
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      message: err.message,
+    });
+  }
 };

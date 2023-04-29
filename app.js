@@ -11,7 +11,13 @@ const reviewRoute = require("./routes/reviewRoute");
 const userRoute = require("./routes/userRoute");
 const adminLabRoute = require("./routes/adminLabRoute");
 const validateRoute = require("./routes/validateRoute");
-const { protect, permition } = require("./controllers/signInControler");
+const nurseRoute = require("./routes/nurseRoute");
+const jobApplyRoute = require("./routes/jobApplyRoute");
+const {
+  protect,
+  permition,
+  checkIfNurseHaveJob,
+} = require("./controllers/signInControler");
 
 //to allow the host to acces multi cors
 app.use(
@@ -50,6 +56,23 @@ app.use("/users", userRoute);
 
 //for validation page
 app.use("/validate", validateRoute);
+
+//for nurse page
+app.use(
+  "/nurse",
+  protect,
+  permition("superadmin", "nurse"),
+  checkIfNurseHaveJob,
+  nurseRoute
+);
+
+//job request
+app.use(
+  "/job",
+  protect,
+  permition("superadmin", "nurse", "auditor", "receptionist", "admin"),
+  jobApplyRoute
+);
 
 //starting deleting users that are not valided there account
 job.start();
