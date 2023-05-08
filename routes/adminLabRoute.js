@@ -9,6 +9,9 @@ const Complaint = require("../Model/Complaint");
 const MessageToAdmin = require("../Model/MessageToAdmin");
 const BloodBank = require("../Model/BloodBank");
 const Donation = require("../Model/Donation");
+const JobRequest = require("../Model/JobRequest");
+const User = require("../Model/User");
+const { route } = require("./nurseRoute");
 
 /////////////// Admin Laboratory Routes //////////////////
 
@@ -372,7 +375,91 @@ router.route("/:id/:worker").delete(async (req, res) => {
   }
 });
 
-//create new lab in the client side
-//change the lab id in the route of addbloodbank
+//get all jobs requests for an announcement for only this user
+router.route("/annonce/:id").get(async (req, res) => {
+  const id = req.params.id;
+  try {
+    const applicant = await Announcement.findOne({
+      _id: id,
+      owner: req.user._id,
+    })
+      .select("jobRequests title")
+      .populate({
+        path: "jobRequests",
+        select: "cv date status",
+        populate: { path: "user", select: "name surname email -_id" },
+      });
+
+    return res.status(200).json({ applicant, status: "success" });
+  } catch (e) {
+    return res.status(400).json({ status: "faild", message: e.message });
+  }
+});
+
+//accept or reject the job request
+router.route("/annonce/:id").post(async (req, res) => {
+  const id = req.params.id;
+  const { jobRequestId, status } = req.body;
+  if (!jobRequestId || !status) {
+    return res
+      .status(400)
+      .json({ status: "faild", message: "Please fill all fields" });
+  }
+  try {
+    const announcement = await Announcement.findOne({
+      _id: id,
+      owner: req.user._id,
+    });
+    //check if status is accept then save it in laboratory
+    if (status === "accept") {
+      //check if the user is already working in this lab
+      const lab = await Laboratory.findById(announcement.lab);
+      const worker = await JobRequest.findById(jobRequestId).select("user");
+
+      if (lab.workers.includes(worker.user))
+        return res.status(400).json({
+          status: "faild",
+          message: "This worker already working in this lab",
+        });
+      //add the worker to the lab
+      lab.workers.push(worker.user);
+      await lab.save();
+      //update jobRequests to accepted
+      await JobRequest.findByIdAndUpdate(jobRequestId, { status: "accepted" });
+
+      //update the user hasjob to true
+      await User.findByIdAndUpdate(worker.user, { hasJob: true });
+
+      //delete from all other announcements jobRequests of this user
+      await Announcement.updateMany(
+        { "jobRequests.user": worker.user },
+        { $pull: { jobRequests: { user: worker.user } } }
+      );
+
+      //delete all job request of this user
+      await JobRequest.deleteMany({ user: worker.user });
+    } else if (status === "reject") {
+      //update jobRequests to rejected
+      await JobRequest.findByIdAndUpdate(jobRequestId, { status: "rejected" });
+    }
+
+    const applicant = await Announcement.findOne({
+      _id: id,
+      owner: req.user._id,
+    })
+      .select("jobRequests title")
+      .populate({
+        path: "jobRequests",
+        select: "cv date status",
+        populate: { path: "user", select: "name surname email -_id" },
+      });
+
+    return res
+      .status(200)
+      .json({ applicant, status: "success", message: "successfuly send" });
+  } catch (e) {
+    return res.status(400).json({ status: "faild", message: e.message });
+  }
+});
 
 module.exports = router;

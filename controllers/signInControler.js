@@ -2,7 +2,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../Model/User");
 const { promisify } = require("util");
-const Announcement = require("../Model/Announcement");
 
 exports.protect = async (req, res, next) => {
   //getting token and check it

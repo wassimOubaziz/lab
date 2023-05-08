@@ -30,23 +30,23 @@ const jobRequestSchema = new Schema({
   },
 });
 
-jobRequestSchema.index({ worker: 1, laboratory: 1 }, { unique: true });
+jobRequestSchema.index({ user: 1, announcementId: 1 }, { unique: true });
 
 jobRequestSchema.pre("save", function (next) {
   const self = this;
   this.constructor.findOne(
-    { worker: this.worker, laboratory: this.laboratory },
+    { user: this.user, announcementId: this.announcementId },
     function (err, doc) {
       if (err) {
         return next(err);
       } else if (doc && !doc._id.equals(self._id)) {
-        // A document with this worker and laboratory already exists, and it's not the same document being saved
+        // A document with this user and announcementId already exists, and it's not the same document being saved
         const error = new Error(
-          "worker and laboratory must be unique together"
+          "user and announcementId must be unique together"
         );
         return next(error);
       } else {
-        // No document with this worker and laboratory exists, or the existing document is the same as the one being saved
+        // No document with this user and announcementId exists, or the existing document is the same as the one being saved
         next();
       }
     }

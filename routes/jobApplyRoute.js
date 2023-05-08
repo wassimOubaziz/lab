@@ -20,7 +20,11 @@ router.get("/", async (req, res) => {
       status: "success",
       announcements,
       jobRequests,
-      user: { name: req.user.name },
+      user: {
+        name: req.user.name,
+        hasJob: req.user.hasJob,
+        role: req.user.role,
+      },
     });
   } catch (err) {
     res.status(400).json({
@@ -76,10 +80,9 @@ router.post("/", async (req, res) => {
       jobRequest,
     });
   } catch (err) {
-    await JobRequest.findByIdAndDelete(jobRequest._id);
-    res.status(400).json({
+    return res.status(400).json({
       status: "faild",
-      message: err,
+      message: err.message,
     });
   }
 });
@@ -132,7 +135,7 @@ router.delete("/:id", async (req, res) => {
   } catch (err) {
     res.status(400).json({
       status: "faild",
-      message: err,
+      message: err.message,
     });
   }
 });
@@ -163,7 +166,6 @@ router.patch("/:id", async (req, res) => {
       "announcementId",
       "title job date"
     );
-    console.log(jobRequests);
     res.status(200).json({
       status: "success",
       message: "job request updated",

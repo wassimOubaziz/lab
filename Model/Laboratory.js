@@ -25,6 +25,45 @@ const laboratorySchema = new Schema({
     type: Number,
     default: 0,
   },
+  tests: [
+    {
+      testType: {
+        type: String,
+        required: true,
+        uppercase: true,
+      },
+      reference: {
+        max: {
+          type: Number,
+          required: true,
+        },
+        min: {
+          type: Number,
+          required: true,
+        },
+        unit: {
+          type: String,
+          required: [true, "test must have an unit"],
+        },
+        description: {
+          type: String,
+          required: [true, "must have a description"],
+        },
+        lowAdvice: {
+          type: String,
+          required: true,
+        },
+        highAdvice: {
+          type: String,
+          required: true,
+        },
+        price: {
+          type: Number,
+          required: true,
+        },
+      },
+    },
+  ],
   img: {
     type: String,
     default: `/images/no-image.png`,

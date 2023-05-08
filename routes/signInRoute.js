@@ -65,6 +65,7 @@ router.route("/").post(async (req, res) => {
       httpOnly: false,
       // secure: req.secure || req.headers["x-forwarded-proto"] === "https",
     });
+
     // sending to data the response if everything is correct
     res.status(200).json({
       status: "success",

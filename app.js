@@ -13,6 +13,7 @@ const adminLabRoute = require("./routes/adminLabRoute");
 const validateRoute = require("./routes/validateRoute");
 const nurseRoute = require("./routes/nurseRoute");
 const jobApplyRoute = require("./routes/jobApplyRoute");
+const barcodeRoute = require("./routes/barcodeRoute");
 const {
   protect,
   permition,
@@ -65,6 +66,10 @@ app.use(
   checkIfNurseHaveJob,
   nurseRoute
 );
+
+//for all workers
+
+app.use("/barcode", barcodeRoute);
 
 //job request
 app.use(
