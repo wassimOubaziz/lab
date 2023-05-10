@@ -1,16 +1,16 @@
 const express = require("express");
+const router = express.Router();
+const Laboratory = require("../Model/Laboratory");
+const Analyse = require("../Model/Analyse");
 //multer is for uploading files(images)
 const multer = require("multer");
 const path = require("path");
-const router = express.Router();
-const Laboratory = require("../Model/Laboratory");
 const Announcement = require("../Model/Announcement");
 const Complaint = require("../Model/Complaint");
 const MessageToAdmin = require("../Model/MessageToAdmin");
 const BloodBank = require("../Model/BloodBank");
 const Donation = require("../Model/Donation");
 const User = require("../Model/User");
-const Analyse = require("../Model/Analyse");
 
 //get all the requests analyse for patients in the same lab
 router.get("/", async (req, res) => {

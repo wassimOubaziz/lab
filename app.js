@@ -14,6 +14,8 @@ const validateRoute = require("./routes/validateRoute");
 const nurseRoute = require("./routes/nurseRoute");
 const jobApplyRoute = require("./routes/jobApplyRoute");
 const barcodeRoute = require("./routes/barcodeRoute");
+const workerRoute = require("./routes/workerRoute");
+
 const {
   protect,
   permition,
@@ -77,6 +79,13 @@ app.use(
   protect,
   permition("superadmin", "nurse", "auditor", "receptionist", "admin"),
   jobApplyRoute
+);
+
+app.use(
+  "/worker",
+  protect,
+  permition("superadmin", "nurse", "auditor", "receptionist"),
+  workerRoute
 );
 
 //starting deleting users that are not valided there account
