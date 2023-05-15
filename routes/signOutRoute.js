@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const User = require("../Model/User");
 
 //making sign out route jwt
-router.route("/").get((req, res) => {
+router.route("/").get(async (req, res) => {
+  req.user.acitve = false;
+  await req.user.save({ validateBeforeSave: false });
   res.clearCookie("jwt", { maxAge: 0 });
   res.status(200).json({
     status: "success",

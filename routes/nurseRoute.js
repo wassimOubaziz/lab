@@ -27,6 +27,11 @@ router.get("/", async (req, res) => {
       data: {
         requests,
         hasJob: req.user.hasJob,
+        user: {
+          name: req.user.name,
+          surname: req.user.surname,
+          email: req.user.email,
+        },
       },
     });
   } catch (err) {

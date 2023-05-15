@@ -21,7 +21,7 @@ router.route("/").post(async (req, res) => {
     let user = await User.findOne({
       email: email,
     }).select(
-      "+password -name -surname -email -acitve -createdAt -dateOfBirth -phone  -changedPassword -joinedLab"
+      "+password -name -surname -email  -createdAt -dateOfBirth -phone  -changedPassword -joinedLab"
     );
 
     if (user) {
@@ -51,6 +51,9 @@ router.route("/").post(async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: process.env.JWT_EXPIRE_TIME,
     });
+
+    user.acitve = true;
+    await user.save({ validateBeforeSave: false });
 
     // i dont wont to chow all of this
     user.password = undefined;

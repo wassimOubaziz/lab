@@ -187,12 +187,13 @@ router.route("/addAnnouncement").post(async (req, res) => {
   }
 
   try {
+    const lab = await Laboratory.findById(address).select("owner");
     const announce = new Announcement({
       title,
       content,
       job,
       lab,
-      owner: req.user._id,
+      owner: lab.owner,
     });
     await announce.save();
     const announcements = await Announcement.find({ owner: req.user._id });

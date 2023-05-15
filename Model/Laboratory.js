@@ -64,6 +64,10 @@ const laboratorySchema = new Schema({
       },
     },
   ],
+  createdAt: {
+    type: Date,
+    default: () => Date.now(),
+  },
   img: {
     type: String,
     default: `/images/no-image.png`,
@@ -78,6 +82,7 @@ const laboratorySchema = new Schema({
     {
       type: Schema.Types.ObjectId,
       ref: "User",
+      unique: true,
     },
   ],
 });

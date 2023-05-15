@@ -50,7 +50,17 @@ const userSchima = new Schema({
       lowercase: true,
     },
   ],
-  joinedLab: [{ type: mongoose.Schema.Types.ObjectId, ref: "Laboratory" }],
+  labs: {
+    type: [
+      {
+        lab: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Laboratory",
+        },
+      },
+    ],
+    default: [],
+  },
   dateOfBirth: {
     type: Date,
     required: [true, "user must have a date of birth"],

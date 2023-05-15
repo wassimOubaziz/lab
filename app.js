@@ -15,6 +15,10 @@ const nurseRoute = require("./routes/nurseRoute");
 const jobApplyRoute = require("./routes/jobApplyRoute");
 const barcodeRoute = require("./routes/barcodeRoute");
 const workerRoute = require("./routes/workerRoute");
+const superAdminRoute = require("./routes/superAdminRoute");
+const patientRoute = require("./routes/patientRoute");
+const paimentRoute = require("./routes/paimentRoute");
+const analyseRoute = require("./routes/analyseRoute");
 
 const {
   protect,
@@ -43,7 +47,7 @@ app.use("/signup", signupRoute);
 app.use("/login", signInRoute);
 
 //for sign out page
-app.use("/logout", signOutRoute);
+app.use("/logout", protect, signOutRoute);
 
 //for admin lab page
 app.use("/admin-lab", protect, permition("superadmin", "admin"), adminLabRoute);
@@ -87,6 +91,19 @@ app.use(
   permition("superadmin", "nurse", "auditor", "receptionist"),
   workerRoute
 );
+
+//for super admin
+app.use("/superadmin", protect, permition("superadmin"), superAdminRoute);
+
+//for patient
+
+// app.use("/patient", patientRoute);
+
+// //for Analyse
+// app.use("/analyse", analyseRoute);
+
+// //for Paiment
+// app.use("/paiment", paimentRoute);
 
 //starting deleting users that are not valided there account
 job.start();
