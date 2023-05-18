@@ -10,16 +10,25 @@
   "author": "Wassim Oubaziz",
   "license": "MIT",
   "dependencies": {
+    "@tensorflow/tfjs-node": "^4.5.0",
     "bcryptjs": "^2.4.3",
+    "body-parser": "^1.20.2",
     "bwip-js": "^3.4.0",
+    "canvas": "^2.11.2",
     "cors": "^2.8.5",
     "cron": "^2.3.0",
+    "dlib": "^0.0.99",
     "dotenv": "^16.0.3",
     "express": "^4.18.2",
+    "face-api.js": "^0.22.2",
+    "jimp": "^0.22.8",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^6.9.1",
     "multer": "^1.4.5-lts.1",
+    "node-canvas": "^2.9.0",
+    "node-fetch": "^3.3.1",
     "nodemailer": "^6.9.1",
+    "sharp": "^0.32.1",
     "validator": "^13.9.0"
   }
 }

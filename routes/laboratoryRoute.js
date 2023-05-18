@@ -5,7 +5,6 @@ const Laboratory = require("../Model/Laboratory");
 //get labs with search
 router.route("/").get(async (req, res) => {
   try {
-    //console.log(req.query, "testing");
     let query = req.query.query; // Access the "query" property of the "req.query" object
     if (!query) {
       query = "{}";

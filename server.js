@@ -16,4 +16,4 @@ mongoose
 
 const PORT = process.env.PORT || "3600";
 
-app.listen(PORT, () => console.log("http://localhost:" + PORT));
+app.listen(PORT, "0.0.0.0", () => console.log("http://localhost:" + PORT));

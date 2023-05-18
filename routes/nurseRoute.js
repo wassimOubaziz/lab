@@ -22,6 +22,7 @@ router.get("/", async (req, res) => {
       "patient",
       "name surname email"
     );
+    console.log(requests, lab);
     res.status(200).json({
       status: "success",
       data: {

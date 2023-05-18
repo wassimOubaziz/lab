@@ -463,4 +463,76 @@ router.route("/annonce/:id").post(async (req, res) => {
   }
 });
 
+//get all the workers for this admin
+router.route("/workers/ar").get(async (req, res) => {
+  try {
+    //get workers from lab that this admin own
+    const workers = await Laboratory.find({ owner: req.user._id })
+      .select("workers")
+      .populate("workers", "name surname");
+    //get the only the array of all workers togther
+    const workersArray = workers.map((worker) => worker.workers);
+    //flat the array
+    const flatWorkersArray = workersArray.flat();
+    //get the unique workers
+    const uniqueWorkers = [...new Set(flatWorkersArray)];
+    //add the owner to the array
+    uniqueWorkers.push({
+      _id: req.user._id,
+      name: req.user.name,
+      surname: req.user.surname,
+    });
+
+    return res.status(200).json({ workers: uniqueWorkers });
+  } catch (e) {
+    return res.status(400).json({ status: "faild", message: e.message });
+  }
+});
+
+//check if the user is a worker in this lab
+router.route("/check-worker").post(async (req, res) => {
+  const { id, labId } = req.body;
+  if (!id || !labId)
+    return res
+      .status(400)
+      .json({ status: "faild", message: "Please fill all fields" });
+
+  try {
+    const lab = await Laboratory.findById(labId)
+      .select("workers owner")
+      .populate("workers", "name surname email phone role")
+      .populate("owner", "name surname email phone role");
+    //if not the owner send only the worker if it the owner send only the owner
+
+    if (
+      id === req.user._id.toString() &&
+      lab.owner._id.toString() === req.user._id.toString()
+    ) {
+      return res.status(200).json({
+        status: "success",
+        message: "You allowed to oppen this door",
+        user: lab.owner,
+      });
+    }
+
+    if (lab.workers.some((worker) => worker._id.toString() === id)) {
+      const worker = lab.workers.find((worker) => worker._id.toString() === id);
+      return res.status(200).json({
+        status: "success",
+        message: "You are allowed to open this door",
+        user: worker,
+      });
+    } else {
+      const user = await User.findById(id).select("name surname email");
+      return res.status(200).json({
+        status: "faild",
+        message: "Your not allowed to oppen this door",
+        user: user,
+      });
+    }
+  } catch (e) {
+    return res.status(400).json({ status: "faild", message: e.message });
+  }
+});
+
 module.exports = router;
