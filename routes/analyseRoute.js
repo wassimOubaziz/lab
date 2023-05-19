@@ -24,7 +24,6 @@ router.route("/:id").get(async (req, res) => {
 //add analyse
 router.post("/addAnalpatient", async (req, res) => {
   try {
-    console.log(req.body);
     const { laboratory, date, time } = req.body;
     const existingAppointment = await Analyse.findOne({
       laboratory,
@@ -47,7 +46,6 @@ router.post("/addAnalpatient", async (req, res) => {
     const savedAnalyse = await newAnalyse.save();
     res.status(201).json(savedAnalyse);
   } catch (err) {
-    console.log(err.message);
     res.status(400).json({ message: err.message });
   }
 });
@@ -131,7 +129,6 @@ router.route("/Fanal/:patient").get(async (req, res) => {
       arr.push(d);
     }
   });
-  //console.log(anls[0].patient == patientId)
   res.status(200).json(arr);
 });
 

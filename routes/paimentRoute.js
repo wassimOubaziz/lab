@@ -27,7 +27,6 @@ router.post("/Addpaiment", async (req, res) => {
     const savedPayment = await newPayment.save();
     res.status(201).json(savedPayment);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ message: "Server Error" });
   }
 });
@@ -38,7 +37,6 @@ router.get("/payments", async (req, res) => {
     const payments = await Paiment.find();
     res.send(payments);
   } catch (err) {
-    console.error(err);
     res.status(500).send("Server error");
   }
 });

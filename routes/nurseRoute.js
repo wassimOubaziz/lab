@@ -22,7 +22,6 @@ router.get("/", async (req, res) => {
       "patient",
       "name surname email"
     );
-    console.log(requests, lab);
     res.status(200).json({
       status: "success",
       data: {
@@ -320,6 +319,25 @@ router.delete("/tests/:id", async (req, res) => {
     res.status(200).json({
       status: "success",
       message: "test has been deleted succesfully",
+    });
+  } catch (err) {
+    res.status(400).json({
+      status: "fail",
+      message: err.message,
+    });
+  }
+});
+
+//get the lab of the nurse
+router.get("/lab", async (req, res) => {
+  try {
+    const lab = await Laboratory.findOne({ workers: req.user._id })
+      .select("_id workers patients")
+      .populate("workers", "name surname")
+      .populate("patients", "name surname");
+    res.status(200).json({
+      status: "success",
+      lab,
     });
   } catch (err) {
     res.status(400).json({

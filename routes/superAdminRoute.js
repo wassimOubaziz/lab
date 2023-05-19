@@ -233,32 +233,103 @@ router.get("/users", async (req, res) => {
 
 router.delete("/users/:id", async (req, res) => {
   try {
-    const user = await User.findByIdAndDelete(req.params.id);
-    //delete all the reference of the user in the lab
-    const labs = await Laboratory.find({});
-    labs.forEach(async (lab) => {
-      //delete the user from the workers
-      const workers = lab.workers.filter((worker) => {
-        return worker.toString() !== user._id.toString();
+    const userId = req.params.id;
+
+    // Check if the user exists
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({
+        status: "fail",
+        message: "User not found",
       });
-      //delete the user from the patients
-      const patients = lab.patients.filter((patient) => {
-        return patient.toString() !== user._id.toString();
-      });
-      //update the lab
-      await Laboratory.findByIdAndUpdate(lab._id, {
-        workers,
-        patients,
-      });
+    }
+
+    // Check if the user is an admin
+    if (user.role === "admin") {
+      // Delete all the labs owned by the admin
+      await Laboratory.deleteMany({ owner: userId });
+
+      // Update workers to hasJob: false
+      await Laboratory.updateMany(
+        { workers: { $in: [userId] } },
+        { hasJob: false }
+      );
+    }
+
+    // Find all labs where the user is a worker or patient
+    const labs = await Laboratory.find({
+      $or: [{ workers: userId }, { patients: userId }],
     });
 
-    //send seccess message
+    // Update labs to remove the user from workers and patients
+    for (let i = 0; i < labs.length; i++) {
+      const lab = labs[i];
+
+      // Remove the user from workers
+      lab.workers = lab.workers.filter((worker) => {
+        return worker.toString() !== userId.toString();
+      });
+
+      // Remove the user from patients
+      lab.patients = lab.patients.filter((patient) => {
+        return patient.toString() !== userId.toString();
+      });
+
+      // Update the lab
+      await lab.save();
+    }
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
+    // Send success message
     res.status(200).json({
       status: "success",
-      message: "user deleted successfully",
+      message: "User deleted successfully",
     });
   } catch (err) {
     res.status(400).json({
+      status: "fail",
+      message: err.message,
+    });
+  }
+});
+
+//get all workers of all labs
+router.get("/workers/ar", async (req, res) => {
+  try {
+    //get all workers
+    const workers = await Laboratory.find({})
+      .select("workers")
+      .populate("workers", "name surname _id");
+    //get the only the array of all workers togther
+    const allWorkers = workers.map((worker) => worker.workers);
+    //get the number of all workers
+    const totalWorkers = allWorkers.flat();
+    //add all owners to the array
+    const owners = await Laboratory.find({})
+      .select("owner")
+      .populate("owner", "name surname _id");
+    const allOwners = owners.map((owner) => owner.owner);
+    totalWorkers.push(...allOwners);
+    //get the unique workers
+
+    //remove all nulls in the array
+    const uniqueWorkers2 = totalWorkers.filter((worker) => worker !== null);
+    uniqueWorkers2.push({
+      name: req.user.name,
+      surname: req.user.surname,
+      _id: req.user._id,
+    });
+
+    const uniqueWorkers = [...new Set(uniqueWorkers2)];
+    //send the response
+    return res.status(200).json({
+      status: "success",
+      workers: uniqueWorkers,
+    });
+  } catch (err) {
+    return res.status(400).json({
       status: "fail",
       message: err.message,
     });

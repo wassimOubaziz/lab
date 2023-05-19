@@ -23,12 +23,10 @@ router.route("/:id").get(async (req, res) => {
         return res.status(404).json({ error: 'Patient not found' });
       }
       const labs = patient.labs
-      console.log(labs)
       const labsSUB= await Laboratory.findById(labs).select('-_id -workers -owner')
 
       res.json({ labsSUB });
     } catch (error) {
-      console.error(error);
       res.status(500).json({ error: 'Server error' });
     }
   });*/
@@ -43,7 +41,6 @@ router.route("/labs/:id").get(async (req, res) => {
     const labs = await Laboratory.find({ _id: { $in: labIds } });
     res.json(labs);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -74,7 +71,6 @@ router.route("/Upatient/:id").put(async (req, res) => {
     const patient = await User.findByIdAndUpdate(req.params.id, body, {
       new: true,
     });
-    console.log(body);
     res.json({
       message: "User updated successfully",
     });
@@ -200,10 +196,8 @@ router.route("/Jlabs/:id").post(async (req, res) => {
   try {
     const patientId = req.params.id;
     const labId = req.body.labId;
-    console.log(patientId, labId);
     // Check if the user exists
     const user = await User.findById(patientId);
-    console.log(user);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -229,7 +223,6 @@ router.route("/Jlabs/:id").post(async (req, res) => {
       .status(200)
       .json({ message: "Lab added to user's labs array", user, lab });
   } catch (err) {
-    console.error(err);
     return res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -258,7 +251,6 @@ router.route("/leaveLab/:id").delete(async (req, res) => {
       .status(200)
       .json({ message: "Lab removed from user's labs array", user });
   } catch (err) {
-    console.error(err);
     return res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -276,7 +268,6 @@ router.route("/addReview/:id").post(async (req, res) => {
       user: userId,
       laboratory: req.body.laboratoryId,
     });
-    console.log(review);
     await review.save();
 
     return res.status(201).json({
@@ -286,7 +277,6 @@ router.route("/addReview/:id").post(async (req, res) => {
       },
     });
   } catch (err) {
-    console.error(err);
     return res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -303,7 +293,6 @@ router.post("/CompWorkers", async (req, res) => {
     const workers = lab.workers;
     res.json(workers);
   } catch (err) {
-    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -312,7 +301,6 @@ router.post("/CompWorkers", async (req, res) => {
 
 router.post("/ACompl", async (req, res) => {
   try {
-    console.log(req.body);
     const { type, reported, complainer, title, content, owner } = req.body;
 
     // Create new complaint
@@ -330,7 +318,6 @@ router.post("/ACompl", async (req, res) => {
 
     res.status(201).json(savedComplaint);
   } catch (error) {
-    console.error(error);
     res.status(500).json({ error: "Server error" });
   }
 });

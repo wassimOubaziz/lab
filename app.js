@@ -106,7 +106,7 @@ app.use(
 
 //for all workers
 
-app.use("/barcode", barcodeRoute);
+app.use("/barcode", protect, barcodeRoute);
 
 //job request
 app.use(
@@ -127,17 +127,33 @@ app.use(
 app.use("/superadmin", protect, permition("superadmin"), superAdminRoute);
 
 //for face recognition
-app.use("/detect", protect, permition("admin", "nurse"), faceRecognition);
+app.use(
+  "/detect",
+  protect,
+  permition("admin", "nurse", "superadmin"),
+  faceRecognition
+);
+
+//for door opening
+app.use(
+  "/door",
+  protect,
+  permition("admin", "nurse", "superadmin", "auditor", "receptionist"),
+  require("./routes/doorRouter")
+);
+
+//for blood bank
+app.use("/blood-bank", protect, require("./routes/bloodBankRoute"));
 
 //for patient
 
-// app.use("/patient", patientRoute);
+app.use("/patient", protect, patientRoute);
 
 // //for Analyse
-// app.use("/analyse", analyseRoute);
+app.use("/analyse", analyseRoute);
 
 // //for Paiment
-// app.use("/paiment", paimentRoute);
+app.use("/paiment", paimentRoute);
 
 //starting deleting users that are not valided there account
 job.start();
