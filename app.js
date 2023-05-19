@@ -126,6 +126,9 @@ app.use(
 //for super admin
 app.use("/superadmin", protect, permition("superadmin"), superAdminRoute);
 
+//for switch to patient mode and back
+app.use("/switch", protect, require("./routes/switchTopatientRoute"));
+
 //for face recognition
 app.use(
   "/detect",
