@@ -62,6 +62,10 @@ const analyseSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  name: {
+    type: String,
+    default: undefined,
+  },
 });
 
 module.exports = mongoose.model("Analyse", analyseSchema);

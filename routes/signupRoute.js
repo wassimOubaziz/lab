@@ -64,4 +64,19 @@ router.route("/").post(async (req, res) => {
   }
 });
 
+//////////////////
+
+router.route("/signupPatient").post(async (req, res) => {
+  const body = req.body;
+  body.role = ["patient"];
+  try {
+    const user = new User(body);
+    user.isValide = true;
+    await user.save();
+    res.status(200).json(user);
+  } catch (e) {
+    res.status(400).json({ message: e.message });
+  }
+});
+
 module.exports = router;

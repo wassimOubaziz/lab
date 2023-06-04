@@ -10,24 +10,23 @@ router.post("/Addpaiment", async (req, res) => {
       expirationMM,
       expirationYY,
       cvv,
-      userId,
       laboratoryId,
     } = req.body;
-
+    const payer = req.user._id.toString();
     const newPayment = new Paiment({
       cardNumber,
       cardHolder,
       expirationMM,
       expirationYY,
       cvv,
-      user: userId,
+      user: payer,
       laboratory: laboratoryId,
     });
 
     const savedPayment = await newPayment.save();
     res.status(201).json(savedPayment);
   } catch (err) {
-    res.status(500).json({ message: "Server Error" });
+    res.status(400).json({ message: err.message });
   }
 });
 
@@ -37,6 +36,7 @@ router.get("/payments", async (req, res) => {
     const payments = await Paiment.find();
     res.send(payments);
   } catch (err) {
+    console.error(err);
     res.status(500).send("Server error");
   }
 });
@@ -44,7 +44,7 @@ router.get("/payments", async (req, res) => {
 //get paiment by user
 router.get("/users/:id/paiments", async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.user._id;
     const paiments = await Paiment.find({ user: userId }).populate(
       "laboratory"
     );

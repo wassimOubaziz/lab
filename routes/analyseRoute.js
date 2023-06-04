@@ -1,6 +1,8 @@
 const express = require("express");
 const Analyse = require("../Model/Analyse");
 const router = express.Router();
+const moment = require("moment");
+const User = require("../Model/User");
 
 // ...
 // get all annalyse high
@@ -24,8 +26,11 @@ router.route("/:id").get(async (req, res) => {
 //add analyse
 router.post("/addAnalpatient", async (req, res) => {
   try {
-    const { laboratory, date, time } = req.body;
+    const patient = req.user._id; // Corrected: Declare patient as a local variable
+    //console.log(patient);
+    const { laboratory, date, time, selectedTests } = req.body;
     const existingAppointment = await Analyse.findOne({
+      patient,
       laboratory,
       date,
       time,
@@ -42,10 +47,17 @@ router.post("/addAnalpatient", async (req, res) => {
         .status(400)
         .json({ message: "Invalid date. Please select a future date." });
     }
-    const newAnalyse = new Analyse(req.body);
+    const newAnalyse = new Analyse({
+      patient, // Assign patient to the new Analyse instance
+      laboratory,
+      date,
+      time,
+      selectedTests,
+    });
     const savedAnalyse = await newAnalyse.save();
     res.status(201).json(savedAnalyse);
   } catch (err) {
+    console.log(err.message);
     res.status(400).json({ message: err.message });
   }
 });
@@ -129,6 +141,7 @@ router.route("/Fanal/:patient").get(async (req, res) => {
       arr.push(d);
     }
   });
+  //console.log(anls[0].patient == patientId)
   res.status(200).json(arr);
 });
 
@@ -149,6 +162,41 @@ router.route("/Ranal/test/:id").get(async (req, res) => {
     "-_id -patient -laboratory -tests._id"
   );
   res.status(200).json(anls);
+});
+
+// get all analyse of lab
+router.route("/analyses/:labId").get(async (req, res) => {
+  const { labId } = req.params;
+  const analyses = await Analyse.find({ laboratory: labId }).populate(
+    "patient",
+    "username"
+  );
+  res.status(200).json(analyses);
+});
+//doctore note update
+router.route("/analysDN/:id").put(async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { doctorNote } = req.body;
+
+    // find the analysis document
+    const analysis = await Analyse.findById(id);
+    if (!analysis) {
+      return res.status(404).json({ message: "Analysis not found" });
+    }
+
+    // update the doctor's note
+    analysis.doctorNote = doctorNote;
+
+    // save the updated document
+    await analysis.save();
+
+    res
+      .status(200)
+      .json({ message: "Doctor note updated successfully", analysis });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update doctor note" });
+  }
 });
 
 module.exports = router;

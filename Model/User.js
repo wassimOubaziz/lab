@@ -99,10 +99,6 @@ const userSchima = new Schema({
     type: Boolean,
     default: false,
   },
-  mode: {
-    type: Boolean,
-    default: false,
-  },
 });
 
 //this will work when i update the password or when i create new user

@@ -8,69 +8,61 @@ const Complaint = require("../Model/Complaint");
 const router = express.Router();
 
 // patient info
-router.route("/:id").get(async (req, res) => {
-  const id = req.params.id;
+router.route("/").get(async (req, res) => {
+  const id = req.user._id;
   const patient = await User.findById(id).select(
     "-role -dateOfBirth -createdAt"
   );
   res.status(200).json(patient);
 });
-//inscrit patient labos abonment
-/* router.route("/labs/:id").get(async (req, res) => {
-    try {
-      const patient = await User.findById(req.params.id);
-      if (!patient) {
-        return res.status(404).json({ error: 'Patient not found' });
-      }
-      const labs = patient.labs
-      const labsSUB= await Laboratory.findById(labs).select('-_id -workers -owner')
 
-      res.json({ labsSUB });
-    } catch (error) {
-      res.status(500).json({ error: 'Server error' });
-    }
-  });*/
 //get labs patients
-router.route("/labs/:id").get(async (req, res) => {
+router.route("/labs").get(async (req, res) => {
   try {
-    const patient = await User.findById(req.params.id);
+    const patient = req.user;
+
     if (!patient) {
       return res.status(404).json({ error: "Patient not found" });
     }
     const labIds = patient.labs;
     const labs = await Laboratory.find({ _id: { $in: labIds } });
-    res.json(labs);
+    res.status(200).json(labs);
   } catch (error) {
+    console.error(error);
     res.status(500).json({ error: "Server error" });
   }
 });
 
 //get anaylse patient
-router.route("/anals/:id").get(async (req, res) => {
-  const patientId = req.params.id;
+router.route("/anals").get(async (req, res) => {
+  const patientId = req.user._id;
+  // console.log(req.user._id);
   const analyses = await Analyse.find({ patient: patientId });
   res.status(200).json(analyses);
 });
 
 // update patient
-router.route("/Upatient/:id").put(async (req, res) => {
+router.route("/Upatient/").put(async (req, res) => {
   const body = req.body;
   const existeUser = await User.findOne({ username: body.username });
+  // console.log(body);
+  // console.log(req.user);
   if (req.body.role) {
     return res.status(400).json({
       message: "Role field cannot be updated",
     });
   }
-  if (existeUser && existeUser._id.toString !== req.params.id) {
+  if (existeUser && existeUser._id.toString === req.user._id) {
     return res.status(400).json({
       message: "Username already exusting",
     });
   }
   try {
     const body = req.body;
-    const patient = await User.findByIdAndUpdate(req.params.id, body, {
+    const patient = await User.findByIdAndUpdate(req.user._id, body, {
       new: true,
     });
+    // console.log(patient);
     res.json({
       message: "User updated successfully",
     });
@@ -95,16 +87,10 @@ router.route("/Mappoinment").post(async (req, res) => {
   }
 });
 
-// display all appointement
-router.route("/").get(async (req, res) => {
-  const Appointments = await Analyse.find({}).select("-__v");
-  res.status(200).json(Appointments);
-});
-
 //delete accounte
-router.route("/daccount/:patientId").delete(async (req, res) => {
+router.route("/daccount/").delete(async (req, res) => {
   try {
-    const patientId = req.params.patientId;
+    const patientId = req.user._id;
 
     // Check if the account belongs to the patient
     const deletedAccount = await User.findByIdAndDelete(patientId);
@@ -192,10 +178,11 @@ router.route("/patient/appointments/:patientId").get(async (req, res) => {
 });
 
 // patient join alabo
-router.route("/Jlabs/:id").post(async (req, res) => {
+router.route("/Jlabs/").post(async (req, res) => {
   try {
-    const patientId = req.params.id;
+    const patientId = req.user._id;
     const labId = req.body.labId;
+
     // Check if the user exists
     const user = await User.findById(patientId);
     if (!user) {
@@ -209,28 +196,27 @@ router.route("/Jlabs/:id").post(async (req, res) => {
     }
 
     // Check if the lab is already in the user's labs array
-    if (user.labs.some((userLab) => userLab?.equals(lab._id))) {
+    if (user.labs.some((userLab) => userLab.equals(lab._id))) {
       return res.status(400).json({ message: "Lab already joined" });
     }
 
     // Add the lab to the user's labs array
     user.labs.push(labId);
-    lab.patients.push(patientId);
-    await lab.save();
     await user.save();
 
     return res
       .status(200)
-      .json({ message: "Lab added to user's labs array", user, lab });
+      .json({ message: "Lab added to user's labs array", user });
   } catch (err) {
+    console.error(err);
     return res.status(500).json({ message: "Internal server error" });
   }
 });
 
 // leave lab
-router.route("/leaveLab/:id").delete(async (req, res) => {
+router.route("/leaveLab/").delete(async (req, res) => {
   try {
-    const patientId = req.params.id;
+    const patientId = req.user._id;
     const labId = req.body.labId;
 
     // Check if the user exists
@@ -251,14 +237,15 @@ router.route("/leaveLab/:id").delete(async (req, res) => {
       .status(200)
       .json({ message: "Lab removed from user's labs array", user });
   } catch (err) {
+    console.error(err);
     return res.status(500).json({ message: "Internal server error" });
   }
 });
 //add review
 
-router.route("/addReview/:id").post(async (req, res) => {
+router.route("/addReview/").post(async (req, res) => {
   try {
-    const userId = req.params.id;
+    const userId = req.user._id;
     const user = await User.findById(userId);
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -268,6 +255,7 @@ router.route("/addReview/:id").post(async (req, res) => {
       user: userId,
       laboratory: req.body.laboratoryId,
     });
+    // console.log(review);
     await review.save();
 
     return res.status(201).json({
@@ -277,6 +265,7 @@ router.route("/addReview/:id").post(async (req, res) => {
       },
     });
   } catch (err) {
+    console.error(err);
     return res.status(500).json({ message: "Internal server error" });
   }
 });
@@ -293,6 +282,7 @@ router.post("/CompWorkers", async (req, res) => {
     const workers = lab.workers;
     res.json(workers);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -301,7 +291,8 @@ router.post("/CompWorkers", async (req, res) => {
 
 router.post("/ACompl", async (req, res) => {
   try {
-    const { type, reported, complainer, title, content, owner } = req.body;
+    const { type, reported, title, content, owner } = req.body;
+    const complainer = req.user._id.toString();
 
     // Create new complaint
     const newComplaint = new Complaint({
@@ -318,6 +309,7 @@ router.post("/ACompl", async (req, res) => {
 
     res.status(201).json(savedComplaint);
   } catch (error) {
+    console.log(error.message);
     res.status(500).json({ error: "Server error" });
   }
 });
@@ -332,7 +324,5 @@ router.put("/up", async (req, res) => {
     res.status(400).json({ message: e.message });
   }
 });
-
-module.exports = router;
 
 module.exports = router;

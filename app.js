@@ -22,6 +22,9 @@ const superAdminRoute = require("./routes/superAdminRoute");
 const patientRoute = require("./routes/patientRoute");
 const paimentRoute = require("./routes/paimentRoute");
 const analyseRoute = require("./routes/analyseRoute");
+const auditorRoute = require("./routes/auditorRoute");
+const aiRoute = require("./routes/aiRoute");
+const receptionistRoute = require("./routes/resptinisteRoute");
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -40,9 +43,9 @@ app.use(
       "http://localhost:3000",
       "www.localhost:3000",
       "localhost:3000",
-      "http://192.168.1.41:3000",
-      "192.168.1.41:3000",
-      "www.192.168.1.41:3000",
+      "http://192.168.43.59:3000",
+      "192.168.43.59:3000",
+      "www.192.168.43.59:3000",
     ],
     credentials: true,
     exposedHeaders: ["Set-Cookie"],
@@ -84,13 +87,13 @@ app.use(
 );
 
 //for labo
-app.use("/labs", laboratoryRoute);
+app.use("/labs", protect, laboratoryRoute);
 
 //for reviews
-app.use("/reviews", reviewRoute);
+app.use("/reviews", protect, reviewRoute);
 
 //for users
-app.use("/users", userRoute);
+app.use("/users", protect, userRoute);
 
 //for validation page
 app.use("/validate", validateRoute);
@@ -148,15 +151,48 @@ app.use(
 //for blood bank
 app.use("/blood-bank", protect, require("./routes/bloodBankRoute"));
 
-//for patient
-
-app.use("/patient", protect, patientRoute);
-
 // //for Analyse
-app.use("/analyse", analyseRoute);
+app.use(
+  "/analyse",
+  protect,
+  permition("patient", "auditor", "receptionist"),
+  analyseRoute
+);
 
-// //for Paiment
-app.use("/paiment", paimentRoute);
+//for patient
+app.use(
+  "/patient",
+  protect,
+  permition("patient", "receptionist", "auditor"),
+  patientRoute
+);
+
+//for paiment
+app.use(
+  "/paiment",
+  protect,
+  permition("patient", "auditor", "receptionist"),
+  paimentRoute
+);
+
+//for auditor
+app.use("/auditor", protect, permition("auditor"), auditorRoute);
+
+//for receptionist
+app.use(
+  "/resp",
+  protect,
+  permition("receptionist", "admin", "superadmin"),
+  receptionistRoute
+);
+
+//for ai diabtes
+app.use(
+  "/ai",
+  protect,
+  permition("patient", "auditor", "receptionist"),
+  aiRoute
+);
 
 //starting deleting users that are not valided there account
 job.start();
